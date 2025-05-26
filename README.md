@@ -64,143 +64,151 @@ npm start
 
 ---
 
-## 📡 REST 接口说明
+# 📘 Dashboard 后端接口文档（完整）
 
-### 1. 获取当前配置
+更新时间：2025-05-26
 
-```http
-GET /api/config?key=your-api-key
-```
+---
 
-返回示例：
+## 🌐 接口基础信息
+
+* 服务地址（开发）：`http://localhost:3001`
+* 鉴权方式：**必须附带 API Key（除创建/查询 API Key）**
+
+  * 请求头：`X-API-Key: your-key`
+  * 或 URL 参数：`?key=your-key`
+
+---
+
+## 📑 接口总览
+
+| 接口路径          | 方法   | 描述                 | 鉴权 | 备注                 |
+| ------------- | ---- | ------------------ | -- | ------------------ |
+| `/api/apikey` | POST | 根据用户 ID 创建 API Key | 否  | 仅首次绑定，无需旧 key      |
+| `/api/apikey` | GET  | 根据用户 ID 查询 API Key | 否  | 查询是否已绑定，返回已生成的 key |
+| `/api/config` | GET  | 获取仪表盘配置            | 是  | 返回当前配置 JSON        |
+| `/api/config` | PUT  | 更新仪表盘配置            | 是  | 更新 layout 内容       |
+
+---
+
+## 🔐 创建 API Key
+
+**POST** `/api/apikey`
+
+请求体：
 
 ```json
 {
-  "_id": "...",
-  "userId": "your-api-key",
-  "layout": {...},
+  "userId": "user_123"
+}
+```
+
+返回（新建）：
+
+```json
+{
+  "key": "xxx-xxx-uuid"
+}
+```
+
+返回（已存在）：
+
+```json
+{
+  "error": "API key already exists for this user",
+  "key": "xxx-xxx-existing"
+}
+```
+
+---
+
+## 🔍 查询 API Key
+
+**GET** `/api/apikey?userId=user_123`
+
+请求参数：
+
+* `userId`（字符串）：用户唯一 ID，必填
+
+返回成功：
+
+```json
+{
+  "key": "xxx-xxx-uuid"
+}
+```
+
+返回失败：
+
+```json
+{
+  "error": "API key not found for this user"
+}
+```
+
+说明：
+
+* 不需要鉴权，可用于前端判断是否已绑定
+* 若用户已绑定则返回唯一 API Key
+
+---
+
+## 📥 获取仪表盘配置
+
+**GET** `/api/config?key=xxx`
+
+返回：
+
+```json
+{
+  "userId": "user_123",
+  "layout": { "cards": [...] },
   "versions": [...]
 }
 ```
 
-### 2. 更新配置
+---
 
-```http
-PUT /api/config?key=your-api-key
-Content-Type: application/json
+## 📤 更新仪表盘配置
 
+**PUT** `/api/config?key=xxx`
+
+请求体：
+
+```json
 {
   "layout": { "cards": [...] }
 }
 ```
 
-返回示例：
+返回：
 
 ```json
 {
   "ok": true,
-  "config": { ... }
+  "config": { ...updated... }
 }
 ```
 
 ---
 
-## 🌐 WebSocket 接口说明
+## 📡 WebSocket 推送（可选）
 
-连接地址：
-
-```
-ws://localhost:3001
-```
-
-连接成功后将自动收到欢迎信息：
+* 地址：`ws://localhost:3001`
+* 无需附带 key，连接后服务将推送：
 
 ```json
 {
   "type": "welcome",
-  "ts": 1748199999
+  "ts": 1748200000
 }
 ```
-## 🧾 Swagger 文档同步建议
 
-建议使用 `swagger-jsdoc` + `swagger-ui-express` 集成 Swagger UI。
+说明：
 
-### 安装依赖
-
-```bash
-npm install swagger-jsdoc swagger-ui-express --save
-```
-
-### 添加 Swagger 配置模块
-
-```js
-// docs/swagger.js
-import swaggerJSDoc from 'swagger-jsdoc';
-
-const options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Dashboard Backend API',
-      version: '1.0.0',
-    },
-  },
-  apis: ['./routes/*.js'], // 注释写在 routes 文件中
-};
-
-export const swaggerSpec = swaggerJSDoc(options);
-```
-
-### 在 server.js 中接入
-
-```js
-import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec } from './docs/swagger.js';
-
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-```
-
-### 示例注释（添加至 routes/apikey.routes.js 顶部）
-
-```js
-/**
- * @swagger
- * /api/apikey:
- *   post:
- *     summary: 根据用户ID生成 API Key
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - userId
- *             properties:
- *               userId:
- *                 type: string
- *                 example: "user_abc123"
- *     responses:
- *       200:
- *         description: 返回生成或已有的 API Key
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 key:
- *                   type: string
- *                   example: f0c9b7d2-ae2b-47e3-92fc-ced3bc8e3d2b
- */
-```
-
-
-客户端可监听服务推送的 `configUpdated` 等消息事件（未来扩展）。
+* 用于后续支持配置热更新、推送 `configUpdated` 等事件
 
 ---
 
-## 📁 文件说明参考
+如需扩展图表卡片聚合查询、用户注销、权限绑定等功能，请提前定义接口结构和字段范围。
 
-详见目录结构说明文档 `dashboard-backend-files`
-
-如需生成 Swagger 文档、加入 PM2、Nginx、或 SaaS 模式拓展，欢迎继续请求 🎯
