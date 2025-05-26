@@ -13,14 +13,15 @@ import dashboardRoutes from './routes/dashboard.routes.js';
 import { WebSocketHub } from './services/wsHub.js';
 import { logger } from './utils/logger.js';
 
-dotenv.config();                        // ① 解析 .env 到 process.env
-
 const app = express();                  // 创建 Express 实例
+dotenv.config();                        // ① 解析 .env 到 process.env
+app.use(express.json());           // ✅ 加这一行！解析 JSON 请求体
+app.use(authMiddleware);                  // 之后才启用全局鉴权
+
 const server = http.createServer(app);  // 用原生 HTTP 包裹，后面挂 WebSocket
 
 // ---------- 路由 ----------
 app.use('/api/apikey', apiKeyRoutes);   // ② API‑Key 生成 / 查询
-app.use(authMiddleware);                  // 之后才启用全局鉴权
 app.use('/api/config', configRoutes);   // ③ 单仪表盘配置、聚合取数
 app.use('/api/dashboard', dashboardRoutes); // ④ 多仪表盘 CRUD
 
