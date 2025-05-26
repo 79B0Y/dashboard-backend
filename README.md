@@ -121,6 +121,79 @@ ws://localhost:3001
   "ts": 1748199999
 }
 ```
+## 🧾 Swagger 文档同步建议
+
+建议使用 `swagger-jsdoc` + `swagger-ui-express` 集成 Swagger UI。
+
+### 安装依赖
+
+```bash
+npm install swagger-jsdoc swagger-ui-express --save
+```
+
+### 添加 Swagger 配置模块
+
+```js
+// docs/swagger.js
+import swaggerJSDoc from 'swagger-jsdoc';
+
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Dashboard Backend API',
+      version: '1.0.0',
+    },
+  },
+  apis: ['./routes/*.js'], // 注释写在 routes 文件中
+};
+
+export const swaggerSpec = swaggerJSDoc(options);
+```
+
+### 在 server.js 中接入
+
+```js
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './docs/swagger.js';
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+```
+
+### 示例注释（添加至 routes/apikey.routes.js 顶部）
+
+```js
+/**
+ * @swagger
+ * /api/apikey:
+ *   post:
+ *     summary: 根据用户ID生成 API Key
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 example: "user_abc123"
+ *     responses:
+ *       200:
+ *         description: 返回生成或已有的 API Key
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 key:
+ *                   type: string
+ *                   example: f0c9b7d2-ae2b-47e3-92fc-ced3bc8e3d2b
+ */
+```
+
 
 客户端可监听服务推送的 `configUpdated` 等消息事件（未来扩展）。
 
