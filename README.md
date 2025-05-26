@@ -67,29 +67,29 @@ npm start
 
 ## 📁 项目结构与用途
 
-```
+
 dashboard-backend/
-├── controllers/              # 路由控制器逻辑
-│   ├── apikey.controller.js      - 创建与查询 API Key
-│   ├── config.controller.js      - 获取、更新配置及聚合数据
-│   └── dashboard.controller.js   - 多仪表盘的增删查改逻辑
-│
-├── routes/                  # 路由定义
-│   ├── apikey.routes.js        - `/api/apikey` 路由绑定
-│   ├── config.routes.js        - `/api/config` 路由绑定
-│   └── dashboard.routes.js     - `/api/dashboard` 路由绑定
-│
-├── models/                  # 可选的 Mongo 模型定义
-│   └── ApiKey.js               - API Key Schema（如使用 mongoose）
-│
-├── public/                  # 静态资源目录
-├── .env                     # 环境变量（数据库、端口等）
-├── server.js                # 应用入口文件
-├── package.json             # 项目依赖与启动脚本
-├── install.sh               # 安装与初始化脚本
-├── dashboard_mongo_init.json  # 初始化数据库样例数据
-├── README.md                # 本接口文档
-```
+├─ controllers/              # 业务控制器
+│  ├─ apikey.controller.js
+│  ├─ config.controller.js
+│  └─ dashboard.controller.js
+├─ routes/                   # 路由
+│  ├─ apikey.routes.js
+│  ├─ config.routes.js
+│  └─ dashboard.routes.js
+├─ middlewares/              # 中间件
+│  └─ auth.js
+├─ services/                 # 辅助服务
+│  └─ wsHub.js
+├─ utils/logger.js           # 日志封装
+├─ models/ApiKey.js          # 可选 Mongoose 模型
+├─ server.js                 # 应用入口
+├─ .env.example              # 环境变量样例
+├─ install.sh                # 本地安装脚本
+├─ pm2.config.js             # PM2 启动配置
+├─ Dockerfile                # 镜像构建
+└─ docker-compose.yml        # Mongo + 后端编排
+
 
 
 > 更新时间：2025-05-26
