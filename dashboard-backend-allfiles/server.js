@@ -18,14 +18,15 @@ dotenv.config();                        // ① 解析 .env 到 process.env
 const app = express();                  // 创建 Express 实例
 const server = http.createServer(app);  // 用原生 HTTP 包裹，后面挂 WebSocket
 
+// ---------- 路由 ----------
+app.use('/api/apikey', apiKeyRoutes);   // ② API‑Key 生成 / 查询
+app.use(authMiddleware);                  // 之后才启用全局鉴权
+app.use('/api/config', configRoutes);   // ③ 单仪表盘配置、聚合取数
+app.use('/api/dashboard', dashboardRoutes); // ④ 多仪表盘 CRUD
+
 // ---------- 中间件 ----------
 app.use(express.json());                // 内置 JSON Body Parser
 app.use(authMiddleware);                // API‑Key 鉴权（所有 API 统一）
-
-// ---------- 路由 ----------
-app.use('/api/apikey', apiKeyRoutes);   // ② API‑Key 生成 / 查询
-app.use('/api/config', configRoutes);   // ③ 单仪表盘配置、聚合取数
-app.use('/api/dashboard', dashboardRoutes); // ④ 多仪表盘 CRUD
 
 // ---------- 数据库 ----------
 mongoose.connect(process.env.MONGO_URI, {
