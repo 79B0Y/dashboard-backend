@@ -68,27 +68,46 @@ npm start
 ## 📁 项目结构与用途
 
 
+```text
 dashboard-backend/
-├─ controllers/              # 业务控制器
-│  ├─ apikey.controller.js
-│  ├─ config.controller.js
-│  └─ dashboard.controller.js
-├─ routes/                   # 路由
-│  ├─ apikey.routes.js
-│  ├─ config.routes.js
-│  └─ dashboard.routes.js
-├─ middlewares/              # 中间件
-│  └─ auth.js
-├─ services/                 # 辅助服务
-│  └─ wsHub.js
-├─ utils/logger.js           # 日志封装
-├─ models/ApiKey.js          # 可选 Mongoose 模型
-├─ server.js                 # 应用入口
-├─ .env.example              # 环境变量样例
-├─ install.sh                # 本地安装脚本
-├─ pm2.config.js             # PM2 启动配置
-├─ Dockerfile                # 镜像构建
-└─ docker-compose.yml        # Mongo + 后端编排
+├── controllers/                  # 业务控制器
+│   ├── apikey.controller.js      # 生成 & 查询 API‑Key
+│   ├── config.controller.js      # 获取 / 更新 layout，聚合查询
+│   └── dashboard.controller.js   # 多仪表盘 CRUD
+│
+├── routes/                       # 路由注册
+│   ├── apikey.routes.js          # /api/apikey  POST / GET
+│   ├── config.routes.js          # /api/config  GET / PUT / POST agg
+│   └── dashboard.routes.js       # /api/dashboard  list / get / put / delete
+│
+├── middlewares/
+│   └── auth.js                   # API‑Key 鉴权中间件
+│
+├── services/
+│   └── wsHub.js                  # WebSocket Hub + broadcast 工具
+│
+├── models/                       # Mongoose Schema
+│   ├── ApiKey.js                 # API Key 表
+│   └── Config.js                 # 仪表盘 layout 表（含 versions）
+│
+├── utils/
+│   └── logger.js                 # winston/pino 简易封装
+│
+├── config/
+│   └── index.js                  # 统一读取 .env 并导出常量
+│
+├── public/                       # 静态文件 (占位，可放图标)
+│
+├── .env.example                  # 环境变量样例
+├── server.js                     # Express + WS 启动入口
+├── package.json                  # NPM 依赖 & script
+├── install.sh                    # 一键本地安装脚本
+├── pm2.config.js                 # PM2 启动配置
+├── Dockerfile                    # 多阶段镜像构建
+├── docker-compose.yml            # Mongo + Backend 编排
+└── dashboard_mongo_init.json     # 初始化测试数据
+```
+
 
 
 
