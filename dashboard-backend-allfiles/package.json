@@ -2,6 +2,7 @@
   "name": "dashboard-backend",
   "version": "1.0.0",
   "description": "Node/Express backend for multi‑dashboard project",
+  "type": "module",
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
