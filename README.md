@@ -248,6 +248,45 @@ dashboard-backend/
 
 ### 📊 聚合查询卡片数据
 
+📌 卡片应包含以下结构字段以规范前端渲染行为：
+```json
+{
+  "title": "设备趋势对比",
+  "type": "line",                    // 类型：kpi / line / bar / heatmap / html
+  "unit": "kWh",                     // 单位，如功耗单位、次/天、% 等
+  "color": "#00BFFF",                // 可选，用于强调主色调（折线颜色）
+  "tooltip": "{device}: {value}kWh",  // 可选，自定义悬浮提示格式
+  "collection": "device_stats",       // 数据来源集合
+  "pipeline": [...],                  // 聚合管道
+  "position": { "x": 0, "y": 1 },     // 布局位置
+  "size": { "w": 6, "h": 2 }          // 卡片尺寸（栅格单位）
+}
+```
+📎 建议后端只负责存储该结构，前端根据 `type` 与字段自动解析并适配图表逻辑。
+
+📎 卡片的取数逻辑由 `collection` 和 `pipeline` 字段定义：
+- `collection` 表示查询的 MongoDB 集合名（如 `device_stats`）
+- `pipeline` 是标准 MongoDB 聚合管道数组，结果结构由前端渲染逻辑适配
+
+📎 如果你希望在一个卡片中展示多个设备运行曲线或对比数据，请约定卡片结构如下：
+```json
+{
+  "title": "多设备趋势对比",
+  "type": "line",
+  "collection": "device_stats",
+  "pipeline": [
+    { "$match": { "user": "user_001", "device": { "$in": ["AC", "Light", "Washer"] } } },
+    { "$group": {
+      "_id": { "device": "$device", "date": "$date" },
+      "value": { "$sum": "$energy" }
+    }},
+    { "$sort": { "_id.date": 1 } }
+  ]
+}
+```
+📎 前端需解析 `_id.device` 为每条线的 key，`_id.date` 为横轴，`value` 为值。
+
+
 📎 如果需要在**一个卡片中展示多个设备的运行曲线**（如折线图中每条线代表一个设备），可使用以下 pipeline 模式：
 
 ```json
@@ -346,4 +385,3 @@ dashboard-backend/
 ```json
 { "ok": true }
 ```
-
