@@ -63,56 +63,52 @@ npm start
 * URL 参数：`?key=your-api-key`
 
 ---
+# 📘 Dashboard 后端接口文档（完整 - Markdown 增强版）
 
-# 📘 Dashboard 后端接口文档（完整）
-
-更新时间：2025-05-26
+> 🕒 更新时间：2025-05-26
 
 ---
 
 ## 🌐 接口基础信息
 
-* 服务地址（开发）：`http://localhost:3001`
-* 鉴权方式：**必须附带 API Key（除创建/查询 API Key）**
-
-  * 请求头：`X-API-Key: your-key`
-  * 或 URL 参数：`?key=your-key`
+- **服务地址**（开发）：`http://localhost:3001`
+- **鉴权方式**：除部分接口外，所有接口都必须携带 API Key：
+  - 请求头方式：`X-API-Key: your-key`
+  - 或 URL 参数方式：`?key=your-key`
 
 ---
 
 ## 📑 接口总览
 
-| 接口路径          | 方法   | 描述                 | 鉴权 | 备注                 |
-| ------------- | ---- | ------------------ | -- | ------------------ |
-| `/api/apikey` | POST | 根据用户 ID 创建 API Key | 否  | 仅首次绑定，无需旧 key      |
-| `/api/apikey` | GET  | 根据用户 ID 查询 API Key | 否  | 查询是否已绑定，返回已生成的 key |
-| `/api/config` | GET  | 获取仪表盘配置            | 是  | 返回当前配置 JSON        |
-| `/api/config` | PUT  | 更新仪表盘配置            | 是  | 更新 layout 内容       |
+| 接口路径              | 方法 | 描述                        | 鉴权 | 备注                                     |
+|------------------------|------|-----------------------------|------|------------------------------------------|
+| `/api/apikey`         | POST | 根据用户 ID 创建 API Key     | 否   | 仅首次绑定，无需旧 key                   |
+| `/api/apikey`         | GET  | 根据用户 ID 查询 API Key     | 否   | 查询是否已绑定，返回已生成的 key         |
+| `/api/config`         | GET  | 获取仪表盘配置               | ✅   | 返回当前配置 JSON                        |
+| `/api/config`         | PUT  | 更新仪表盘配置               | ✅   | 更新 layout 内容                         |
+| `/api/config/agg`     | POST | 查询指定卡片的数据（聚合）   | ✅   | 聚合查询（collection + pipeline）        |
 
 ---
 
 ## 🔐 创建 API Key
 
-**POST** `/api/apikey`
+**接口地址**：`POST /api/apikey`
 
-请求体：
-
+**请求示例**：
 ```json
 {
   "userId": "user_123"
 }
 ```
 
-返回（新建）：
-
+**返回（新建）**：
 ```json
 {
   "key": "xxx-xxx-uuid"
 }
 ```
 
-返回（已存在）：
-
+**返回（已存在）**：
 ```json
 {
   "error": "API key already exists for this user",
@@ -124,41 +120,33 @@ npm start
 
 ## 🔍 查询 API Key
 
-**GET** `/api/apikey?userId=user_123`
+**接口地址**：`GET /api/apikey?userId=user_123`
 
-请求参数：
+- 参数说明：`userId` 为用户唯一 ID
 
-* `userId`（字符串）：用户唯一 ID，必填
-
-返回成功：
-
+**返回（存在）**：
 ```json
 {
   "key": "xxx-xxx-uuid"
 }
 ```
 
-返回失败：
-
+**返回（未绑定）**：
 ```json
 {
   "error": "API key not found for this user"
 }
 ```
 
-说明：
-
-* 不需要鉴权，可用于前端判断是否已绑定
-* 若用户已绑定则返回唯一 API Key
+📎 不需要鉴权，前端可用作注册逻辑判断是否已有 key。
 
 ---
 
 ## 📥 获取仪表盘配置
 
-**GET** `/api/config?key=xxx`
+**接口地址**：`GET /api/config?key=xxx`
 
-返回：
-
+**返回示例**：
 ```json
 {
   "userId": "user_123",
@@ -171,18 +159,16 @@ npm start
 
 ## 📤 更新仪表盘配置
 
-**PUT** `/api/config?key=xxx`
+**接口地址**：`PUT /api/config?key=xxx`
 
-请求体：
-
+**请求示例**：
 ```json
 {
   "layout": { "cards": [...] }
 }
 ```
 
-返回：
-
+**返回示例**：
 ```json
 {
   "ok": true,
@@ -192,11 +178,38 @@ npm start
 
 ---
 
+## 📊 聚合查询卡片数据
+
+**接口地址**：`POST /api/config/agg?key=xxx`
+
+**请求示例**：
+```json
+{
+  "collection": "device_stats",
+  "pipeline": [
+    { "$match": { "device": "abc123" } },
+    { "$group": { "_id": null, "total": { "$sum": "$power" } } }
+  ]
+}
+```
+
+**返回示例**：
+```json
+{
+  "value": {
+    "total": 285.7
+  }
+}
+```
+
+📎 支持任意聚合逻辑，由前端根据卡片定义动态构造 pipeline。
+
+---
+
 ## 📡 WebSocket 推送（可选）
 
-* 地址：`ws://localhost:3001`
-* 无需附带 key，连接后服务将推送：
-
+- **连接地址**：`ws://localhost:3001`
+- **连接成功后将收到欢迎包**：
 ```json
 {
   "type": "welcome",
@@ -204,9 +217,11 @@ npm start
 }
 ```
 
-说明：
+📎 未来可推送 `configUpdated` 等事件实现实时热更新。
 
-* 用于后续支持配置热更新、推送 `configUpdated` 等事件
+---
+
+如需扩展功能（如图表聚合服务、用户角色权限、Token 鉴权等），请提前定义字段结构与访问规则，后端可快速适配。
 
 ---
 
