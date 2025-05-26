@@ -1,15 +1,50 @@
+# docker-compose.yml – 后端 + Mongo 全家桶
+# -------------------------------------------------
+# 使用：
+#   docker-compose up --build -d
+#   docker-compose logs -f backend
+#   docker-compose down            # 停止并清理
+# -------------------------------------------------
 
 version: '3.8'
+
 services:
   mongo:
     image: mongo:6
-    ports: ["27017:27017"]
-    volumes: [mongo-data:/data/db]
-  backend:
-    build: .
-    ports: ["3001:3001"]
+    container_name: dashboard-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"          # 本机映射 → 便于 Robo 连接
+    volumes:
+      - mongo-data:/data/db     # 数据持久化
     environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  backend:
+    build: .                    # 使用同目录 Dockerfile 多阶段构建
+    container_name: dashboard-backend
+    restart: unless-stopped
+    ports:
+      - "3001:3001"            # REST + WS
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
       - MONGO_URI=mongodb://mongo:27017/dashboard
-    depends_on: [mongo]
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app                  # 热重载开发可改为 bind 挂载
+    command: ["pm2-runtime", "pm2.config.js"]
+
+# 可选：mongo-express GUI 方便调试
+#  mongo-express:
+#    image: mongo-express
+#    ports: ["8081:8081"]
+#    environment:
+#      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+#      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+#    depends_on: [mongo]
+
 volumes:
   mongo-data:
